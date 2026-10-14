@@ -1,45 +1,60 @@
 # golden-window
 
-一键安装或复用 Hammerspoon，并配置最大尺寸、居中的 **1.618:1 黄金比例窗口**。适用于 macOS，无需 Python；可从 zsh 或 Bash 终端运行。
+English | [简体中文](README.zh-CN.md)
 
-## 背景
+Install or reuse Hammerspoon and configure the largest centered **1.618:1 golden-ratio windows** with one script. For macOS; no Python required. Run from a zsh or Bash terminal.
 
-为了美化 Mac 窗口，让桌面上的窗口统一成黄金比例矩形，也方便配合台前调度（Stage Manager）使用。没有什么实用价值，纯粹是看着舒服——just for fun。
+## Background
 
-## 安装
+Make Mac windows consistent golden rectangles for a pleasing desktop, including when using Stage Manager. Just for fun—it is about how the windows look.
 
-把整个项目复制到 Mac，然后执行：
+## Installation
+
+Copy the project to your Mac, then run:
 
 ```bash
 bash ~/Projects/golden-window/install.sh
 ```
 
-已有 Hammerspoon 时跳过下载；否则执行 `brew install --cask hammerspoon`。如未安装 Homebrew，请先按 [Homebrew 官网](https://brew.sh/)的指引安装，再运行脚本。
+At startup, enter `1` for English or `2` for Simplified Chinese. Press Enter to accept the default: English on first use, then the language selected during the last successful installation. Installer messages and the Hammerspoon UI use the same language. Run the installer again to switch. External tools such as Homebrew keep their own output language.
 
-首次使用，在 **系统设置 → 隐私与安全性 → 辅助功能** 中开启 Hammerspoon。列表中没有它时，添加 `/Applications/Hammerspoon.app`（或用户 Applications 中实际安装的位置）。授权仍未生效时退出并重新打开 Hammerspoon。
+Without interactive input, the installer uses the saved language or English. Set the language explicitly to skip the prompt:
 
-点击菜单栏 **1.618:1**，选择 **1.618:1 · 最大尺寸并居中**。安装过程不会移动窗口。没有快捷键，也没有恢复选项。
+```bash
+GOLDEN_WINDOW_LANG=en bash install.sh
+GOLDEN_WINDOW_LANG=zh-CN bash install.sh
+```
 
-## 行为与配置
+Only `en` and `zh-CN` are accepted; other values cause an error. The choice is saved in `.golden-window-language` in the configuration directory. The module defaults to English if that file cannot be read or its contents are invalid.
 
-每个普通可见窗口使用各自显示器的可用区域，扣除菜单栏和 Dock，按 `宽度 = min(可用宽度, 可用高度 × 1.618)` 计算最大黄金矩形并居中。比例针对包含标题栏的窗口外框，整数取整可能造成微小误差。窗口允许重叠；跳过全屏、非普通窗口，不处理其他 Spaces 或最小化窗口。应用自身的尺寸限制可能使部分窗口无法达到目标，菜单栏选项会显示调整结果提示。
+If Hammerspoon is already installed, downloading is skipped. Otherwise, the script runs `brew install --cask hammerspoon`. If Homebrew is missing, install it using the instructions on the [Homebrew website](https://brew.sh/) before running the script again.
 
-脚本部署 `~/.hammerspoon/golden-window.lua`，并在 `init.lua` 中加入一次：
+Before first use, enable Hammerspoon in **System Settings → Privacy & Security → Accessibility**. If it is missing, add `/Applications/Hammerspoon.app` (or its actual location in your user Applications folder). Quit and reopen Hammerspoon if permission has not taken effect.
+
+Click **1.618:1** in the menu bar, then **1.618:1 · Maximize and center**. With Chinese selected, the item is **1.618:1 · 最大尺寸并居中**. Installation does not move or resize windows. There are no keyboard shortcuts or restore action.
+
+## Behavior and configuration
+
+Each ordinary visible window uses its own display's work area, excluding the menu bar and Dock. The largest golden rectangle is calculated with `width = min(available width, available height × 1.618)` and centered. The ratio includes the title bar; integer rounding can cause small differences. Windows may overlap. Full-screen and nonstandard windows are skipped; windows in other Spaces and minimized windows are not handled. Application size constraints may prevent some windows from reaching the target. The menu action reports the result.
+
+The installer deploys `~/.hammerspoon/golden-window.lua` and adds this loader to `init.lua` once:
 
 ```lua
 goldenWindow = require("golden-window")
 ```
 
-修改前将原文件备份到 `~/.hammerspoon/backups/`。重复安装不重复添加加载语句。保留其他配置和快捷键；仅自动迁移与本项目已确认的旧版内联实现完全一致的代码块，其余冲突会停止，要求先手动检查。已有模块内容与项目不同也会停止。符号链接配置不会被覆盖。
+Existing files are backed up under `~/.hammerspoon/backups/` before changes. Reinstalling does not duplicate the loader. Other settings and shortcuts are preserved. Only the exact verified legacy inline implementation is migrated automatically; ambiguous conflicts stop installation for manual review. The known original module is identified by its SHA-256 hash and backed up before automatic upgrade. Customized or unrecognized modules stop installation. The language file is backed up too, and symbolic-link configuration files are not overwritten.
 
-运行中的 Hammerspoon 有可用 `hs` IPC 时会重载并核实菜单名称；没有 IPC 时，请在 Hammerspoon 菜单点击 **Reload Config**。无需为此启用 IPC。新的安装会启动 Hammerspoon。若你自行设置了 Hammerspoon 的其他配置目录，可用 `GOLDEN_WINDOW_CONFIG_DIR=/实际目录 bash install.sh`，但脚本不会替你改变 Hammerspoon 的配置目录。
+If a running Hammerspoon has working `hs` IPC, the script reloads the configuration and verifies the menu title and language. Otherwise, click **Reload Config** in the Hammerspoon menu. There is no need to enable IPC for this project. A new installation starts Hammerspoon. If you have configured a different Hammerspoon configuration directory, use `GOLDEN_WINDOW_CONFIG_DIR=/actual/directory bash install.sh`; the script does not change Hammerspoon's configuration directory for you.
 
-## 扩展其他比例
+## Adding other ratios
 
-当前只提供 1.618:1。以后有需要可在项目 `golden-window.lua` 的 `menuItems` 中同理加入：
+Only 1.618:1 is currently provided. To add another ratio, add an entry to `menuItems` in the project's `golden-window.lua`:
 
 ```lua
-{title = "16:9 · 最大尺寸并居中", fn = function() applyLayout(16 / 9, "16:9") end},
+{title = text.extraRatio, fn = function() applyLayout(16 / 9, "16:9") end},
 ```
 
-同时把 `selectedRatio` 的有效值判断改成允许 `1.618:1` 和 `16:9`。已有 `selectRatio(label)` 会让菜单栏名称随选择切换，并保存上次选择。修改项目或已部署的模块前先备份；安装器会拒绝覆盖不同内容的现有模块，需要自行确认后移开旧模块，再运行安装器。
+Add `extraRatio = "16:9 · Maximize and center"` to `translations.en` and `extraRatio = "16:9 · 最大尺寸并居中"` to `translations["zh-CN"]`.
+
+Also update the `selectedRatio` validation to accept both `1.618:1` and `16:9`. The existing `selectRatio(label)` updates the menu bar title and saves the last selection. Back up the project or deployed module before editing. The installer refuses to overwrite customized modules: review and move the old module aside before reinstalling.
